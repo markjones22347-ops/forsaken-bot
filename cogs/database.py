@@ -229,3 +229,15 @@ def authenticate(username: str, password: str, hwid: str) -> tuple[bool, str]:
                 return False, "HWID mismatch. Contact support to reset."
             return True, "OK"
     return False, "Username not found."
+
+# ─── Download URL (stored in Gist, set via /setdownload) ─────────────────────
+
+async def get_download_url() -> str:
+    data = _load()
+    return data.get("download_url", "")
+
+
+async def set_download_url(url: str):
+    data = _load()
+    data["download_url"] = url
+    _save(data)

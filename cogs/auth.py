@@ -29,14 +29,12 @@ from cogs.database import (
     create_key, get_key, get_all_keys,
     disable_key, enable_key, delete_key, delete_keys,
     update_key, register_key, reset_hwid, key_exists,
+    get_download_url, set_download_url,
 )
 
 # ─── Role IDs ─────────────────────────────────────────────────────────────────
 FOUNDER_ROLE_ID  = 1510455747711074514
 CUSTOMER_ROLE_ID = 1510457323162964008
-
-# ─── Download link ────────────────────────────────────────────────────────────
-DOWNLOAD_LINK = os.getenv("DOWNLOAD_LINK", "https://PLACEHOLDER_SET_ME")
 
 # FORSAKEN-XXXX-XXXX-XXXX = 9 + 1 + 4 + 1 + 4 + 1 + 4 = 24 chars
 KEY_LENGTH = 24
@@ -83,6 +81,25 @@ def _validate_key_format(key: str) -> bool:
 # ══════════════════════════════════════════════════════════════════════════════
 #  Modals
 # ══════════════════════════════════════════════════════════════════════════════
+
+class SetDownloadModal(ui.Modal, title="Set Download Link"):
+    url_input = ui.TextInput(
+        label="Download URL",
+        placeholder="https://example.com/forsaken.rar",
+        style=discord.TextStyle.short,
+        max_length=500,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        url = self.url_input.value.strip()
+        if not url.startswith("http"):
+            await interaction.response.send_message("❌ Invalid URL.", ephemeral=True)
+            return
+        await set_download_url(url)
+        await interaction.response.send_message(
+            f"✅ Download link updated.\n`{url}`", ephemeral=True
+        )
+
 
 class GenKeyModal(ui.Modal, title="Generate Key"):
     duration = ui.TextInput(
@@ -510,6 +527,14 @@ class AuthCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @app_commands.command(name="setdownload", description="Set the download link for /download. (Admin)")
+    @app_commands.describe(url="The direct download URL for the Forsaken .rar")
+    async def setdownload(self, interaction: discord.Interaction):
+        if not _is_founder(interaction.user):
+            await interaction.response.send_message("Admin only.", ephemeral=True)
+            return
+        await interaction.response.send_modal(SetDownloadModal())
+
     @app_commands.command(name="genkey", description="Generate one or more Forsaken keys. (Admin)")
     async def genkey(self, interaction: discord.Interaction):
         if not _is_founder(interaction.user):
@@ -642,9 +667,10 @@ class AuthCog(commands.Cog):
             )
             return
 
-        if DOWNLOAD_LINK == "https://PLACEHOLDER_SET_ME":
+        url = await get_download_url()
+        if not url:
             await interaction.response.send_message(
-                "The download link hasn't been configured yet. Contact an admin.",
+                "The download link hasn't been set yet. Contact an admin.",
                 ephemeral=True,
             )
             return
@@ -654,13 +680,14 @@ class AuthCog(commands.Cog):
             ui.TextDisplay("## Download Forsaken"),
             ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
             ui.TextDisplay(
-                f"[**Download Latest Version**]({DOWNLOAD_LINK})\n\n"
+                f"[**Download Latest Version**]({url})\n\n"
+                f"Extract the `.rar` and run `Loader.exe`.\n"
                 f"Log in with your **username** and **password**.\n"
                 f"Your HWID binds automatically on first launch.\n\n"
                 f"-# Do not share this link."
             ),
             ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
-            ui.TextDisplay("-# Forsaken Bot — Download"),
+            ui.TextDisplay("-# Forsaken — Download"),
         ))
         await interaction.response.send_message(view=view, ephemeral=True)
 
