@@ -528,7 +528,6 @@ class AuthCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="setdownload", description="Set the download link for /download. (Admin)")
-    @app_commands.describe(url="The direct download URL for the Forsaken .rar")
     async def setdownload(self, interaction: discord.Interaction):
         if not _is_founder(interaction.user):
             await interaction.response.send_message("Admin only.", ephemeral=True)
