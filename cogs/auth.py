@@ -193,22 +193,56 @@ class RegisterModal(ui.Modal, title="Register — Claim Your Key"):
             except discord.Forbidden:
                 pass
 
-        view = ui.LayoutView()
-        view.add_item(ui.Container(
+        # Defer so we can send two follow-up messages
+        await interaction.response.defer(ephemeral=True, thinking=False)
+
+        # ── Success message ───────────────────────────────────────────────────
+        reg_view = ui.LayoutView()
+        reg_view.add_item(ui.Container(
             ui.TextDisplay("## ✅ Registration Successful"),
             ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
             ui.TextDisplay(
-                f"Your key has been claimed and your account is ready.\n\n"
+                f"Your key has been claimed. Here are your login credentials:\n\n"
                 f"**Username:** `{username}`\n"
+                f"**Password:** the one you just set\n"
                 f"**Key:** `{key}`\n\n"
-                f"Use your **username** and **password** to log in to the loader.\n"
-                f"Your HWID will be bound on first launch.\n\n"
-                f"-# Keep your credentials safe — do not share them."
+                f"-# Save these — you cannot recover your password."
             ),
             ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
-            ui.TextDisplay("-# Forsaken Bot — Registration"),
+            ui.TextDisplay("-# Forsaken — Registration"),
         ))
-        await interaction.response.send_message(view=view, ephemeral=True)
+        await interaction.response.send_message(view=reg_view, ephemeral=True)
+
+        # ── Getting started guide (second message) ────────────────────────────
+        guide_view = ui.LayoutView()
+        guide_view.add_item(ui.Container(
+            ui.TextDisplay("## 📖 Getting Started with Forsaken"),
+            ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
+            ui.TextDisplay(
+                "**Step 1 — Download**\n"
+                "Use `/download` to get the latest `Loader.exe`.\n\n"
+                "**Step 2 — Run the Loader**\n"
+                "Open `Loader.exe`. A console window will appear.\n"
+                "Enter your **username** and **password** when prompted.\n\n"
+                "**Step 3 — Launch Roblox**\n"
+                "Make sure Roblox (`RobloxPlayerBeta.exe`) is already running before or after you log in — the loader will find it automatically.\n\n"
+                "**Step 4 — Open the Menu**\n"
+                "Press **INSERT** to open/close the Forsaken menu overlay.\n"
+                "The menu appears on top of your Roblox window.\n\n"
+                "**Step 5 — Using Features**\n"
+                "• **Aimbot / Silent Aim** — enable and set a keybind to activate\n"
+                "• **Visuals (ESP)** — toggle boxes, names, health bars under the Visuals tab\n"
+                "• **Rage** — hitbox expander, rapidfire, hitsounds, etc.\n"
+                "• **Movement** — speedhack and flyhack with keybind support\n"
+                "• **Settings** — change theme color, save/load configs, toggle watermark\n\n"
+                "**HWID Binding**\n"
+                "Your hardware ID binds automatically on first launch. If you change PC, ask an admin to use `/hwidreset` with your key.\n\n"
+                "**Need help?** Open a support ticket with `/ticket` or ask in the support channel."
+            ),
+            ui.Separator(visible=True, spacing=discord.SeparatorSpacing.small),
+            ui.TextDisplay("-# Forsaken — Getting Started Guide"),
+        ))
+        await interaction.followup.send(view=guide_view, ephemeral=True)
 
 
 class DisableKeyModal(ui.Modal, title="Disable Key"):
