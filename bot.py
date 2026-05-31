@@ -27,6 +27,7 @@ COGS = [
     "cogs.moderation",
     "cogs.utility",
     "cogs.verification",
+    "cogs.auth",
 ]
 
 

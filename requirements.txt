@@ -1,4 +1,4 @@
-# FTSL Bot dependencies
+# Forsaken Bot dependencies
 # Install with: pip install -r requirements.txt
 
 discord.py==2.6.0
